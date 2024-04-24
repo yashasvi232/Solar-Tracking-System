@@ -1,0 +1,49 @@
+#include <Servo.h>
+
+Servo myservo;
+#define ldr1 A0 // Analog pins to recieve the analog signals
+#define ldr2 A1
+#define outputpin 5 //output pin that sends the signal to DE10 lite board
+int pos = 90;
+int tolerance = 20;
+
+
+void setup() {
+  myservo.attach(9);    //servo motor attached to pin 9
+  pinMode(ldr1, INPUT); //takes input
+  pinMode(ldr2, INPUT); //takes input
+  pinMode(outputpin, OUTPUT);
+  myservo.write(pos); //moves the servo motor according to pos (initial value) that is 90
+  Serial.begin(9600); // begins serial communication between DE10 lite board 
+  delay(1000);  // giving delay to ensure that data transfers without any glitches.
+}
+
+void loop() {
+  int value_ldr1 = analogRead(ldr1); //reads the analog value and stores it into value 1
+  int value_ldr2 = analogRead(ldr2);
+
+  if ((abs(value_ldr1 - value_ldr2) <= tolerance) || (abs(value_ldr2 - value_ldr1) <= tolerance)) {
+    
+  } else {
+    if (value_ldr1 > value_ldr2) {
+      pos = pos + 1;
+      //Serial.write(1);
+      digitalWrite(outputpin, 1); //sends signal 1 to DE10 lite board
+    }
+    if (value_ldr1 < value_ldr2) {
+      pos = pos - 1;
+      //Serial.write(0); 
+      digitalWrite(outputpin, 0); //sends signal 0 to DE10 lite board
+    }
+  }
+
+  if (pos > 180) {
+    pos = 180;      //for any value greater than 180 will not be permitted and panel will stop at position 180
+  }
+  if (pos < 0) {
+    pos = 0;
+  }
+
+  myservo.write(pos); // sends the signal to servo motors
+  delay(50);    //delay of 50 ms
+}
