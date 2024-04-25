@@ -1,0 +1,43 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use work.EE232_18.all;
+
+entity SolarTrackingSystem2 is
+    Port (
+        CLK : in STD_LOGIC;	-- Clock
+        MONITOR : in STD_LOGIC;	-- Active low signal
+		  serial_rx : in std_logic;
+		  led1 : out std_logic;
+		  Y : out std_logic_vector(6 downto 0);
+		  led2 : out std_logic
+    );
+end SolarTrackingSystem2;
+
+architecture FUNCTIONALITY of SolarTrackingSystem2 is
+	 SIGNAL CLK_OUT : STD_LOGIC;
+	 signal X : std_logic_vector(3 downto 0);--BCD2SSD DISPLAY
+	 signal F : std_logic;
+begin
+
+	U0 : CLK_DVD port map (CLK,'1',CLK_OUT);
+    process (CLK_OUT, MONITOR)
+    begin
+        if MONITOR = '0' then
+            led1 <= '0'; led2 <='0';
+				X(0)<='0'; X(1)<='1'; X(2)<='0'; X(3)<='1';
+        elsif rising_edge(CLK_OUT) then
+           
+            if serial_rx='0' then	--determines which LDR value is greater and set control signal
+                led1 <='0'; led2 <= '1';    --set led to 1 to move the servo up
+					 X(0)<= '1'; X(1)<= '0'; X(2)<= '0'; X(3)<= '0';--corresponding BCD value
+            elsif serial_rx = '1' then
+                led1 <= '1'; led2 <= '0';    --set led to 0 to move the servo down
+					 X(0)<= '0'; X(1)<= '0'; X(2)<= '0'; X(3)<= '0';--corresponding BCD value
+            end if;
+        end if;
+    end process;
+	 
+	 U1 : BCD2SSD port map (X,Y,F);
+	 
+
+end FUNCTIONALITY;
